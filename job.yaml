@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: moving-to-infra-job
+spec:
+  parallelism: 1    
+  completions: 1    
+  activeDeadlineSeconds: 1800 
+  backoffLimit: 6   
+  template:         
+    metadata:
+      name: pi
+    spec:
+      containers:
+        - image: "registry.redhat.io/openshift4/ose-cli"
+          imagePullPolicy: Always
+          name: moving-to-infra
+          volumeMounts:
+          - name: infra-config-volume
+            mountPath: "/tmp/"
+          command:
+          - "/bin/bash"
+          - "-c"
+          - '/tmp/moving-to-infra.sh'
+      restartPolicy: OnFailure
+      serviceAccount: moving-to-infra-sa
+      serviceAccountName: moving-to-infra-sa
+      volumes:
+      - name: infra-config-volume
+        configMap:
+          name: moving-to-infra-sh
+          defaultMode: 0744
